@@ -24,7 +24,7 @@ def hello():
 
 # create a user
 @app.route("/create", methods=['GET', 'POST'])
-def create_user(name, email):
+def create_user(name=None, email=None):
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
@@ -33,7 +33,6 @@ def create_user(name, email):
         if not name or not email: return "Go lol yourself"
 
         # create a user in Checkbook
-
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
