@@ -17,18 +17,14 @@ user_url = "https://sandbox.checkbook.io/v3/user"
 vcc_url = "https://sandbox.checkbook.io/v3/account/vcc"
 
 # create a user
-@app.route("/", methods=['GET', 'POST'])
-def create_user():
+@app.route("/create", methods=['GET', 'POST'])
+def create_user(name, email):
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
         return render_template('home.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
     elif request.method == 'POST':
-
-        # get the attributes from the post request form
-        name = request.args.get('name')
-        ebt = request.args.get('ebt')
-        email = request.args.get('email')
+        if not name or not email: return "Go lol yourself"
 
         # create a user in Checkbook
         # TODO: how do we add Authorization in header, when we only get that as the post request response
@@ -70,7 +66,7 @@ def create_user():
 
         # add user to Users table
         # id = checkbook authorization
-        new_user = {"id": f'{res["key"]}:{res["secret"]}', "name": name, "balance": 0, "ebt": ebt}
+        new_user = {"id": f'{res["key"]}:{res["secret"]}', "name": name, "balance": 0}
         _ = supabase.table('Users').insert(new_user).execute()
 
         # add vcc to user and add it to VCC table
@@ -117,8 +113,9 @@ def buy(user=None, product=None):
         return """Insufficient funds"""
 
 # buy a product
+# card info is for ebt
 @app.route("/redeem/<user>/", methods=['GET', 'POST'])
-def redeem(user=None):
+def redeem(card_number, expiration_date, cvv, user=None, deposit=0):
     if request.method == 'GET':
         # TODO: have form where people can enter in their ebt and redeem credits
         return """Fuck me"""
@@ -126,9 +123,6 @@ def redeem(user=None):
         if not user: return """Log in bitch"""
 
         # TODO: actually get the money from ebt to us
-
-        # get the amount they deposited
-        deposit = request.args["desposit"]
 
         # Get current user balance
         buy_product = supabase.table('Users').select("*").eq("id", user).execute()
