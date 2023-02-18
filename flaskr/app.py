@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 import requests
 import os
 from supabase import create_client, Client
@@ -10,7 +10,7 @@ app = Flask(__name__)
 # supa_key: str = os.environ.get("SUPABASE_KEY")
 
 supa_url: str = "https://jzjvqqnpxpmrsqwooipn.supabase.co"
-supa_key: str = "teyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY3MDUxMzUsImV4cCI6MTk5MjI4MTEzNX0.I1zPmUnmOOXM2opyktaMFU3oji7cHMlEPE8rAin0gI8"
+supa_key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY3NjcwNTEzNSwiZXhwIjoxOTkyMjgxMTM1fQ.6lsTCYOKvVqgcqiDrH7K4PLsxU6kPxss3hPyB7JA5zM"
 supabase: Client = create_client(supa_url, supa_key)
 
 user_url = "https://sandbox.checkbook.io/v3/user"
@@ -52,7 +52,6 @@ def create_user():
         # res["secret"]
         # res["user_id"]  
         user_res = json.loads(user_response.text)
-        print(user_res)
 
         # make virtual credit card (vcc)
         # TODO: do we just want to hardcode an address in?
@@ -80,38 +79,36 @@ def create_user():
         # add vcc to user and add it to VCC table
         # user_id = checkbook authorization
         # id = unique card identifier
-        new_vcc = {"user_id": f'{user_res["key"]}:{user_res["secret"]}', "id": vcc_res["id"], "card_number": vcc_res["card_number"], "expiration_date": res["expiration_date"], "cvv": res["cvv"]}
+        new_vcc = {"user_id": f'{user_res["key"]}:{user_res["secret"]}', "id": vcc_res["id"], \
+                    "card_number": vcc_res["card_number"], "expiration_date": vcc_res["expiration_date"], "cvv": vcc_res["cvv"]}
         _ = supabase.table('VCC').insert(new_vcc).execute()
+
+        return redirect(f'/marketplace/{user_res["key"]}%3A{user_res["secret"]}')
     else:
         return "404 Error: Page not found"
 
 # marketplace for logged in user
 @app.route("/marketplace/<user>", methods=['GET'])
 def marketplace(user=None):
-    if not user: return render_template('error.html')
-
     # get the database element for the logged in user
     u = supabase.table('Users').select("*").eq("id", user).execute()
-    assert(len(u) == 1)
-    data = json.loads(u.data[0])
+    data = u.data[0]
 
     # TODO: embed You.com into this 
-    return f"""<h1>{data["name"]} has a balance of {data["balance"]}</>"""
+    return render_template('marketplace.html', id=user, name=data["name"], balance=data["balance"])
 
 # buy a product
-@app.route("/buy/<user>/<product>", methods=['POST'])
+@app.route("/buy/<user>/<product>", methods=['PUT'])
 def buy(user=None, product=None):
     if not user or not product: return render_template('error.html')
 
     # Get product information
     buy_product = supabase.table('Products').select("*").eq("id", product).execute()
-    assert(len(buy_product) == 1)
-    prod_info = json.loads(buy_product.data[0])
+    prod_info = buy_product.data[0]
 
     # Get current user balance
     buy_product = supabase.table('Users').select("*").eq("id", user).execute()
-    assert(len(buy_product) == 1)
-    user_info = json.loads(buy_product.data[0])
+    user_info = buy_product.data[0]
 
     # update balance
     if user_info["balance"] >= prod_info["price"]:
