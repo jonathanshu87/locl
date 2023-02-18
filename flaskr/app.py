@@ -29,8 +29,8 @@ def create_user():
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
-        return """<h1>Enter your details</>"""
-    elif request.method == 'POST':
+        return render_template('nonexistent.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
+    elif Flask.request.method == 'POST':
 
         # get the attributes from the post request form
         name = request.args.get('name')
@@ -91,7 +91,7 @@ def create_user():
 # marketplace for logged in user
 @app.route("/marketplace/<user>", methods=['GET'])
 def marketplace(user=None):
-    if not user: return "Log in bitch"
+    if not user: return "Log in bitch" #UPDATE THIS
 
     # get the database element for the logged in user
     u = supabase.table('Users').select("*").eq("id", user).execute()
