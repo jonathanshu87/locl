@@ -51,7 +51,8 @@ def create_user():
         # res["key"]
         # res["secret"]
         # res["user_id"]  
-        res = json.loads(user_response.text)
+        user_res = json.loads(user_response.text)
+        print(user_res)
 
         # make virtual credit card (vcc)
         # TODO: do we just want to hardcode an address in?
@@ -69,17 +70,17 @@ def create_user():
         # res["card_number"]
         # res["expiration_date"]
         # res["cvv"]
-        res = json.loads(vcc_response.text)
+        vcc_res = json.loads(vcc_response.text)
 
         # add user to Users table
         # id = checkbook authorization
-        new_user = {"id": f'{res["key"]}:{res["secret"]}', "name": name, "balance": 0}
+        new_user = {"id": f'{user_res["key"]}:{user_res["secret"]}', "name": name, "balance": 0}
         _ = supabase.table('Users').insert(new_user).execute()
 
         # add vcc to user and add it to VCC table
         # user_id = checkbook authorization
         # id = unique card identifier
-        new_vcc = {"user_id": f'{res["key"]}:{res["secret"]}', "id": res["id"], "card_number": res["card_number"], "expiration_date": res["expiration_date"], "cvv": res["cvv"]}
+        new_vcc = {"user_id": f'{user_res["key"]}:{user_res["secret"]}', "id": vcc_res["id"], "card_number": vcc_res["card_number"], "expiration_date": res["expiration_date"], "cvv": res["cvv"]}
         _ = supabase.table('VCC').insert(new_vcc).execute()
     else:
         return "404 Error: Page not found"
