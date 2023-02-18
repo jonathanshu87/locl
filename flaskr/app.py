@@ -28,7 +28,7 @@ def create_user():
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
-        return render_template('create_user.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
+        return render_template('create_user.html') 
     elif request.method == 'POST':
         if not request.form["name"] or not request.form["email"]: return render_template('error.html')
 
@@ -107,11 +107,30 @@ def buy(user=None, product=None):
     prod_info = buy_product.data[0]
 
     # Get current user balance
-    buy_product = supabase.table('Users').select("*").eq("id", user).execute()
-    user_info = buy_product.data[0]
+    users = supabase.table('Users').select("*").eq("id", user).execute()
+    user_info = users.data[0]
 
     # update balance
     if user_info["balance"] >= prod_info["price"]:
+
+        key = user_info["id"]
+        amount = prod_info["price"]
+        description = prod_info["name"]
+
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "Authorization": key
+        }
+        payload = {
+            "recipient": "owner@owner.com",
+            "name": "owner",
+            "amount": amount,
+            "description": description
+        }
+
+        response = requests.post(user_url, json=payload, headers=headers)
+
         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) - int(prod_info["price"])}).eq("id", user).execute()
     else: 
         return render_template('marketplace.html', error="Insufficent Funds")
