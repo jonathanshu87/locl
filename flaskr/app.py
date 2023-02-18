@@ -141,7 +141,7 @@ def buy(user=None, product=None):
 def redeem(user=None):
     if request.method == 'GET':
         # TODO: have form where people can enter in their ebt and redeem credits
-        return """Fuck me"""
+        return render_template("redeem.html")
     elif request.method == 'POST':
         if not request.form["card_number"] or not request.form["expiration_date"] or not request.form["cvv"] or \
             not request.form["deposit"] or not user: 
