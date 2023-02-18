@@ -24,11 +24,11 @@ def hello():
 
 # create a user
 @app.route("/create", methods=['GET', 'POST'])
-def create_user(name, email):
+def create_user(name=None, email=None):
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
-        return render_template('home.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
+        return render_template('home.html')
     elif request.method == 'POST':
         if not name or not email: return "Go lol yourself"
 
