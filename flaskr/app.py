@@ -28,7 +28,7 @@ def create_user():
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
         return render_template('nonexistent.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
-    elif Flask.request.method == 'POST':
+    elif request.method == 'POST':
 
         # get the attributes from the post request form
         name = request.args.get('name')
