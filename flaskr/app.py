@@ -73,7 +73,7 @@ def create_user():
 
         # add user to Users table
         # id = checkbook authorization
-        new_user = {"id": f'{user_res["key"]}:{user_res["secret"]}', "name": name, "balance": 0}
+        new_user = {"id": f'{user_res["key"]}:{user_res["secret"]}', "name": name, "balance": 0, "email": email}
         _ = supabase.table('Users').insert(new_user).execute()
 
         # add vcc to user and add it to VCC table
@@ -119,19 +119,25 @@ def buy(user=None, product=None):
 # buy a product
 # card info is for ebt
 @app.route("/redeem/<user>/", methods=['GET', 'POST'])
-def redeem(card_number, expiration_date, cvv, user=None, deposit=0):
+def redeem(user=None):
     if request.method == 'GET':
         # TODO: have form where people can enter in their ebt and redeem credits
         return """Fuck me"""
     elif request.method == 'POST':
-        if not user: return render_template('error.html')
+        if not request.form["card_number"] or not request.form["expiration_date"] or not request.form["cvv"] or \
+            not request.form["deposit"] or not user: 
+            return render_template("error.html")
+
+        card_number = request.form["card_number"]
+        expiration_date = request.form["expiration_date"]
+        cvv = request.form["cvv"]
+        deposit = request.form["deposit"]
 
         # TODO: actually get the money from ebt to us
 
         # Get current user balance
         buy_product = supabase.table('Users').select("*").eq("id", user).execute()
-        assert(len(buy_product) == 1)
-        user_info = json.loads(buy_product.data[0])
+        user_info = buy_product.data[0]
 
         # update balance
         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) + int(deposit)}).eq("id", user).execute()
