@@ -23,17 +23,13 @@ def hello():
 
 # create a user
 @app.route("/create", methods=['GET', 'POST'])
-def create_user():
+def create_user(name, email, card_number, expiration_date, cvv):
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
         return render_template('home.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
     elif request.method == 'POST':
-
-        # get the attributes from the post request form
-        name = request.args.get('name')
-        ebt = request.args.get('ebt')
-        email = request.args.get('email')
+        if not name or not email or not card_number or not expiration_date or not cvv: return "Go fuck yourself"
 
         # create a user in Checkbook
         # TODO: how do we add Authorization in header, when we only get that as the post request response
@@ -77,6 +73,11 @@ def create_user():
         # id = checkbook authorization
         new_user = {"id": f'{res["key"]}:{res["secret"]}', "name": name, "balance": 0, "ebt": ebt}
         _ = supabase.table('Users').insert(new_user).execute()
+
+        # add ebt to EBT table
+        # TODO authenticate EBT
+        new_ebt = {"id": f'{res["key"]}:{res["secret"]}', "card_number": card_number, "expiration_date": expiration_date, "cvv": cvv}
+        _ = supabase.table('EBT').insert(new_ebt).execute()
 
         # add vcc to user and add it to VCC table
         # user_id = checkbook authorization
