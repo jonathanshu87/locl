@@ -127,13 +127,13 @@ def redeem(user=None):
     if request.method == 'GET':
         # TODO: have form where people can enter in their ebt and redeem credits
         return """Fuck me"""
-    elif Flask.request.method == 'POST':
+    elif request.method == 'POST':
         if not user: return """Log in bitch"""
 
         # TODO: actually get the money from ebt to us
 
         # get the amount they deposited
-        deposit = Flask.request.args["desposit"]
+        deposit = request.args["desposit"]
 
         # Get current user balance
         buy_product = supabase.table('Users').select("*").eq("id", user).execute()
