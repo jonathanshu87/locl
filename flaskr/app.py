@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import requests
 import os
 # TODO: might be easier just to use REST instead of python API bc it sucks
@@ -8,8 +8,11 @@ import json
 
 app = Flask(__name__)
 
-supa_url: str = os.environ.get("SUPABASE_URL")
-supa_key: str = os.environ.get("SUPABASE_KEY")
+# supa_url: str = os.environ.get("SUPABASE_URL")
+# supa_key: str = os.environ.get("SUPABASE_KEY")
+
+supa_url: str = "https://jzjvqqnpxpmrsqwooipn.supabase.co"
+supa_key: str = "teyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY3MDUxMzUsImV4cCI6MTk5MjI4MTEzNX0.I1zPmUnmOOXM2opyktaMFU3oji7cHMlEPE8rAin0gI8"
 supabase: Client = create_client(supa_url, supa_key)
 
 user_url = "https://sandbox.checkbook.io/v3/user"
@@ -23,16 +26,16 @@ def hello():
 # create a user
 @app.route("/create", methods=['GET', 'POST'])
 def create_user():
-    if Flask.request.method == 'GET': 
+    if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
         return """<h1>Enter your details</>"""
-    elif Flask.request.method == 'POST':
+    elif request.method == 'POST':
 
         # get the attributes from the post request form
-        name = Flask.request.args.get('name')
-        ebt = Flask.request.args.get('ebt')
-        email = Flask.request.args.get('email')
+        name = request.args.get('name')
+        ebt = request.args.get('ebt')
+        email = request.args.get('email')
 
         # create a user in Checkbook
         # TODO: how do we add Authorization in header, when we only get that as the post request response
@@ -107,10 +110,10 @@ def buy(user=None, product=None):
 # buy a product
 @app.route("/redeem/<user>/", methods=['GET', 'POST'])
 def redeem(user=None):
-    if Flask.request.method == 'GET':
+    if request.method == 'GET':
         # TODO: have form where people can enter in their ebt and redeem credits
         return """Fuck me"""
-    elif Flask.request.method == 'POST':
+    elif request.method == 'POST':
         # TODO: take money from ebt and deposit credits into user's VCC
         pass
     else:
