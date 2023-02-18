@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import requests
 import os
 from supabase import create_client, Client
@@ -15,6 +15,7 @@ supabase: Client = create_client(supa_url, supa_key)
 
 user_url = "https://sandbox.checkbook.io/v3/user"
 vcc_url = "https://sandbox.checkbook.io/v3/account/vcc"
+
 
 @app.route("/")
 def hello():
@@ -36,12 +37,11 @@ def create_user():
         email = request.args.get('email')
 
         # create a user in Checkbook
-        # TODO: how do we add Authorization in header, when we only get that as the post request response
-        # https://docs.checkbook.io/reference/onboard-user
+
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "Authorization": f'{res["key"]}:{res["secret"]}'
+            "Authorization": "86a538fb6584799a755f1a2ab03f6d4b:ce2b54a8e93802433632c4c2ac7f4c54"
         }
         user_payload = {
             "user_id": f"{email}",
