@@ -30,7 +30,7 @@ def create_user():
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
         return render_template('create_user.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
     elif request.method == 'POST':
-        if not request.form["name"] or not request.form["email"]: return "Go lol yourself"
+        if not request.form["name"] or not request.form["email"]: return render_template('error.html')
 
         name = request.form["name"]
         email = request.form["email"]
@@ -88,7 +88,7 @@ def create_user():
 # marketplace for logged in user
 @app.route("/marketplace/<user>", methods=['GET'])
 def marketplace(user=None):
-    if not user: return "Log in bitch" #UPDATE THIS
+    if not user: return render_template('error.html')
 
     # get the database element for the logged in user
     u = supabase.table('Users').select("*").eq("id", user).execute()
@@ -101,7 +101,7 @@ def marketplace(user=None):
 # buy a product
 @app.route("/buy/<user>/<product>", methods=['POST'])
 def buy(user=None, product=None):
-    if not user or not product: return "Log in and pick an item bitch"
+    if not user or not product: return render_template('error.html')
 
     # Get product information
     buy_product = supabase.table('Products').select("*").eq("id", product).execute()
@@ -117,8 +117,7 @@ def buy(user=None, product=None):
     if user_info["balance"] >= prod_info["price"]:
         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) - int(prod_info["price"])}).eq("id", user).execute()
     else: 
-        # TODO: also redirect to marketplace page
-        return """Insufficient funds"""
+        return render_template('marketplace.html', error="Insufficent Funds")
 
 # buy a product
 # card info is for ebt
@@ -128,7 +127,7 @@ def redeem(card_number, expiration_date, cvv, user=None, deposit=0):
         # TODO: have form where people can enter in their ebt and redeem credits
         return """Fuck me"""
     elif request.method == 'POST':
-        if not user: return """Log in bitch"""
+        if not user: return render_template('error.html')
 
         # TODO: actually get the money from ebt to us
 
@@ -140,4 +139,4 @@ def redeem(card_number, expiration_date, cvv, user=None, deposit=0):
         # update balance
         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) + int(deposit)}).eq("id", user).execute()
     else:
-        return "404: Page not found"
+        return render_template('error.html')
