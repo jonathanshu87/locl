@@ -20,7 +20,7 @@ vcc_url = "https://sandbox.checkbook.io/v3/account/vcc"
 @app.route("/")
 def hello():
     # TODO: add a create user button that redirects to /create & a sign in button which doesn't do anything
-    return """<h1>Hello, World!</h1>"""
+    return render_template('home.html')
 
 # create a user
 @app.route("/create", methods=['GET', 'POST'])
@@ -28,12 +28,11 @@ def create_user(name=None, email=None):
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
-        return render_template('home.html')
+        return render_template('create_user.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
     elif request.method == 'POST':
         if not name or not email: return "Go lol yourself"
 
         # create a user in Checkbook
-
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
