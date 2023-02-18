@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import requests
 import os
 from supabase import create_client, Client
@@ -27,7 +27,7 @@ def create_user():
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
-        return render_template('nonexistent.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
+        return render_template('home.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
     elif request.method == 'POST':
 
         # get the attributes from the post request form
