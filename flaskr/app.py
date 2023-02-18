@@ -16,13 +16,8 @@ supabase: Client = create_client(supa_url, supa_key)
 user_url = "https://sandbox.checkbook.io/v3/user"
 vcc_url = "https://sandbox.checkbook.io/v3/account/vcc"
 
-@app.route("/")
-def hello():
-    # TODO: add a create user button that redirects to /create & a sign in button which doesn't do anything
-    return """<h1>Hello, World!</h1>"""
-
 # create a user
-@app.route("/create", methods=['GET', 'POST'])
+@app.route("/", methods=['GET', 'POST'])
 def create_user():
     if request.method == 'GET': 
         # TODO: make a form asking for name and ebt and email
