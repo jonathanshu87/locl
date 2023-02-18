@@ -1,8 +1,6 @@
 from flask import Flask, request
 import requests
 import os
-# TODO: might be easier just to use REST instead of python API bc it sucks
-# https://www.jitsejan.com/creating-quick-app-with-supabase
 from supabase import create_client, Client
 import json
 
@@ -95,7 +93,8 @@ def marketplace(user=None):
 
     # get the database element for the logged in user
     u = supabase.table('Users').select("*").eq("id", user).execute()
-    data = json.loads(u.data)
+    assert(len(u) == 1)
+    data = json.loads(u.data[0])
 
     # TODO: embed You.com into this 
     return f"""<h1>{data["name"]} has a balance of {data["balance"]}</>"""
@@ -105,7 +104,22 @@ def marketplace(user=None):
 def buy(user=None, product=None):
     if not user or not product: return "Log in and pick an item bitch"
 
-    # TODO: update balance based on purchase
+    # Get product information
+    buy_product = supabase.table('Products').select("*").eq("id", product).execute()
+    assert(len(buy_product) == 1)
+    prod_info = json.loads(buy_product.data[0])
+
+    # Get current user balance
+    buy_product = supabase.table('Users').select("*").eq("id", user).execute()
+    assert(len(buy_product) == 1)
+    user_info = json.loads(buy_product.data[0])
+
+    # update balance
+    if user_info["balance"] >= prod_info["price"]:
+        _ = supabase.table("Users").update({"balance": int(user_info["balance"]) - int(prod_info["price"])}).eq("id", user).execute()
+    else: 
+        # TODO: also redirect to marketplace page
+        return """Insufficient funds"""
 
 # buy a product
 @app.route("/redeem/<user>/", methods=['GET', 'POST'])
@@ -114,7 +128,19 @@ def redeem(user=None):
         # TODO: have form where people can enter in their ebt and redeem credits
         return """Fuck me"""
     elif request.method == 'POST':
-        # TODO: take money from ebt and deposit credits into user's VCC
-        pass
+        if not user: return """Log in bitch"""
+
+        # TODO: actually get the money from ebt to us
+
+        # get the amount they deposited
+        deposit = request.args["desposit"]
+
+        # Get current user balance
+        buy_product = supabase.table('Users').select("*").eq("id", user).execute()
+        assert(len(buy_product) == 1)
+        user_info = json.loads(buy_product.data[0])
+
+        # update balance
+        _ = supabase.table("Users").update({"balance": int(user_info["balance"]) + int(deposit)}).eq("id", user).execute()
     else:
         return "404: Page not found"
