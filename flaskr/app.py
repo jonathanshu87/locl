@@ -137,16 +137,18 @@ def buy(user=None, product=None):
 @app.route("/redeem/<user>", methods=['GET', 'POST'])
 def redeem(user=None):
     if request.method == 'GET':
-        return render_template("redeem.html")
+        return render_template("redeem.html", user=user)
     elif request.method == 'POST':
         if not request.form["card_number"] or not request.form["expiration_date"] or not request.form["cvv"] or \
             not request.form["deposit"] or not user: 
             return render_template("error.html")
-        return render_template("redeem.html", card_number = data["cardnumber"], expiration_date = data["expirationdate"], cvv = data["securitycode"], deposit = data["deposit"])
-        #card_number = request.form["card_number"]
-        #expiration_date = request.form["expiration_date"]
-        #cvv = request.form["cvv"]
-        #deposit = request.form["deposit"]
+        # return render_template("redeem.html", card_number = request.form["cardnumber"], expiration_date = data["expirationdate"], cvv = request.form["securitycode"] 
+        # deposit = data["deposit"])
+
+        card_number = request.form["card_number"]
+        expiration_date = request.form["expiration_date"]
+        cvv = request.form["cvv"]
+        deposit = request.form["deposit"]
 
         # TODO: actually get the money from ebt to us
         url = "https://sandbox.checkbook.io/v3/check/digital"
@@ -154,10 +156,11 @@ def redeem(user=None):
         vccs = supabase.table('VCC').select("*").eq("user_id", user).execute()
         user_info = users.data[0]
 
+
         payload = {
             "recipient": user_info["email"],
             "name": user_info["name"],
-            "amount": deposit,
+            "amount": float(deposit),
             "description": "redeem EBT"
         }
         headers = {
@@ -167,26 +170,29 @@ def redeem(user=None):
         }
 
         response = requests.post(url, json=payload, headers=headers)
-
+        print(response.text)
         res = json.loads(response.text)
-        check_id = res["check"]
-
-        url = "https://sandbox.checkbook.io/v3/check/deposit/" + check_id
-
-        payload = {"account": vccs["id"]}
+        check_id = res["id"]
+        
+        url = f"https://sandbox.checkbook.io/v3/check/deposit/{check_id}"
+        print(url)
+        
+        payload = {"account": vccs.data[0]["id"]}
         headers = {
             "content-type": "application/json",
-            "Authorization": "d6aa2703655f4ba2af2a56202961ca86:dXbCgzYBMibj8ZwuQMd2NXr6rtvjZ8"
+            "Authorization": "86a538fb6584799a755f1a2ab03f6d4b:ce2b54a8e93802433632c4c2ac7f4c54"
         }
 
         response = requests.post(url, json=payload, headers=headers)
 
-
+        print(response.text)
         # Get current user balance
         buy_product = supabase.table('Users').select("*").eq("id", user).execute()
         user_info = buy_product.data[0]
 
         # update balance
         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) + int(deposit)}).eq("id", user).execute()
+
+        return redirect(f'/marketplace/{user}')
     else:
         return render_template('error.html')

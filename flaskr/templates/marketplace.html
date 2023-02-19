@@ -11,7 +11,18 @@
         {{ error }}
     </div>
     <h1>Marketplace</h1>
-    Name: {{ name }}
-    Balance: {{ balance }}
+    <p>Name: {{ name }}</p>
+    <p>Balance: {{ balance }}</p>
+    <a href="/redeem/{{ id }}">Redeem</a>
+    <div>
+        {% for product in products %}
+            <div>
+                <h2>{{ product.name }}</h2>
+                <p>{{ product.item }}</p>
+                <p>{{ product.price }}</p>
+                <a href="/buy/{{ id }}/{{ product.id }}">Buy</a>
+            </div>
+        {% endfor %}
+    </div>
 </body>
 </html>
