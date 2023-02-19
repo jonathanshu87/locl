@@ -93,12 +93,28 @@ def marketplace(user=None):
     # get the database element for the logged in user
     u = supabase.table('Users').select("*").eq("id", user).execute()
     data = u.data[0]
+    
+    p = supabase.table("Products").select("*").execute()
+    products = p.data
 
-    # TODO: embed You.com into this 
-    return render_template('marketplace.html', id=user, name=data["name"], balance=data["balance"])
+    s = supabase.table("Store").select("*").execute()
+    store = s.data
+
+    full_list = []
+    for i in products:
+        for j in store:
+            if i["store"] == j["id"]: 
+                full_list.append({
+                    "name": j["name"],
+                    "item": i["product"],
+                    "price": i["price"],
+                    "id": i["id"]
+                })
+
+    return render_template('marketplace.html', id=user, name=data["name"], balance=data["balance"], products=full_list)
 
 # buy a product
-@app.route("/buy/<user>/<product>", methods=['PUT'])
+@app.route("/buy/<user>/<product>", methods=['GET'])
 def buy(user=None, product=None):
     if not user or not product: return render_template('error.html')
 
@@ -137,7 +153,7 @@ def buy(user=None, product=None):
 
 # buy a product
 # card info is for ebt
-@app.route("/redeem/<user>/", methods=['GET', 'POST'])
+@app.route("/redeem/<user>", methods=['GET', 'POST'])
 def redeem(user=None):
     if request.method == 'GET':
         # TODO: have form where people can enter in their ebt and redeem credits
