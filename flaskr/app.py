@@ -107,6 +107,8 @@ def marketplace(user=None):
                     "price": i["price"],
                     "id": i["id"]
                 })
+                
+    # TODO: sort
 
     return render_template('marketplace.html', id=user, name=data["name"], balance=data["balance"], products=full_list)
 
@@ -176,7 +178,7 @@ def redeem(user=None):
         
         url = f"https://sandbox.checkbook.io/v3/check/deposit/{check_id}"
         print(url)
-        
+
         payload = {"account": vccs.data[0]["id"]}
         headers = {
             "content-type": "application/json",
