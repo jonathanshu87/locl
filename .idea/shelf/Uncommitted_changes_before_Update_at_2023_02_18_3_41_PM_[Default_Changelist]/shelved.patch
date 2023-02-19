@@ -1,0 +1,562 @@
+Index: flaskr/templates/create_user.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!--  Load CSS in Flask with html-->\n<link rel= \"stylesheet\" type= \"text/css\" href= \"{{ url_for('static',filename='styles/style.css') }}\">\n<form action=\"/create\" method=\"POST\" style=\"border:1px solid #ccc\">\n    <div class=\"container\">\n      <h1>Welcome to Locl.</h1>\n      <p>Please fill in this form to create an account. Now.</p>\n      <hr>\n  \n      <label for=\"name\"><b>Name</b></label>\n      <input type=\"text\" placeholder=\"Enter Name\" name=\"name\" required>\n\n      <label for=\"email\"><b>Email</b></label>\n      <input type=\"text\" placeholder=\"Enter Email\" name=\"email\" required>\n  \n      <label for=\"psw\"><b>Password</b></label>\n      <input type=\"password\" placeholder=\"Enter Password\" name=\"psw\" required>\n\n    \n      <p>By creating an account you agree to our <a href=\"#\" style=\"color:dodgerblue\">Terms & Privacy</a>.</p>\n  \n      <div class=\"clearfix\">\n        <button type=\"submit\" class=\"signupbtn\">Sign Up</button>\n      </div>\n  </form>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/flaskr/templates/create_user.html b/flaskr/templates/create_user.html
+--- a/flaskr/templates/create_user.html	(revision da211ac5a67ac42528abcdd0eb6a3e831dafa5f8)
++++ b/flaskr/templates/create_user.html	(date 1676762022388)
+@@ -9,7 +9,7 @@
+       <label for="name"><b>Name</b></label>
+       <input type="text" placeholder="Enter Name" name="name" required>
+ 
+-      <label for="email"><b>Email</b></label>
++      <label for="user"><b>Email</b></label>
+       <input type="text" placeholder="Enter Email" name="email" required>
+   
+       <label for="psw"><b>Password</b></label>
+Index: flaskr/app.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from flask import Flask, request, render_template, redirect\nimport requests\nimport os\nfrom supabase import create_client, Client\nimport json\n\napp = Flask(__name__)\n\n# supa_url: str = os.environ.get(\"SUPABASE_URL\")\n# supa_key: str = os.environ.get(\"SUPABASE_KEY\")\n\nsupa_url: str = \"https://jzjvqqnpxpmrsqwooipn.supabase.co\"\nsupa_key: str = \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY3NjcwNTEzNSwiZXhwIjoxOTkyMjgxMTM1fQ.6lsTCYOKvVqgcqiDrH7K4PLsxU6kPxss3hPyB7JA5zM\"\nsupabase: Client = create_client(supa_url, supa_key)\n\nuser_url = \"https://sandbox.checkbook.io/v3/user\"\nvcc_url = \"https://sandbox.checkbook.io/v3/account/vcc\"\n\n\n@app.route(\"/\")\ndef hello():\n    # TODO: add a create user button that redirects to /create & a sign in button which doesn't do anything\n    return render_template('home.html')\n\n# create a user\n@app.route(\"/create\", methods=['GET', 'POST'])\ndef create_user():\n    if request.method == 'GET': \n        # TODO: make a form asking for name and ebt and email\n        # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem\n        return render_template('create_user.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!\n    elif request.method == 'POST':\n        if not request.form[\"name\"] or not request.form[\"email\"]: return render_template('error.html')\n\n        name = request.form[\"name\"]\n        email = request.form[\"email\"]\n\n        # create a user in Checkbook\n        headers = {\n            \"accept\": \"application/json\",\n            \"content-type\": \"application/json\",\n            \"Authorization\": \"86a538fb6584799a755f1a2ab03f6d4b:ce2b54a8e93802433632c4c2ac7f4c54\"\n        }\n        user_payload = {\n            \"user_id\": f\"{email}\",\n            \"name\": f\"{name}\"\n        }\n        user_response = requests.post(user_url, json=user_payload, headers=headers)\n\n        # response credentials\n        # res[\"key\"]\n        # res[\"secret\"]\n        # res[\"user_id\"]  \n        user_res = json.loads(user_response.text)\n\n        # make virtual credit card (vcc)\n        # TODO: do we just want to hardcode an address in?\n        # https://docs.checkbook.io/reference/post-vcc\n        vcc_payload = {\"address\": {\n            \"line_1\": \"1234 N. 1st Street\",\n            \"city\": \"San Francisco\",\n            \"state\": \"CA\",\n            \"zip\": \"12345\"\n        }}\n        vcc_response = requests.post(vcc_url, json=vcc_payload, headers=headers)\n\n        # response virtual credit card\n        # res[\"id\"]\n        # res[\"card_number\"]\n        # res[\"expiration_date\"]\n        # res[\"cvv\"]\n        vcc_res = json.loads(vcc_response.text)\n\n        # add user to Users table\n        # id = checkbook authorization\n        new_user = {\"id\": f'{user_res[\"key\"]}:{user_res[\"secret\"]}', \"name\": name, \"balance\": 0}\n        _ = supabase.table('Users').insert(new_user).execute()\n\n        # add vcc to user and add it to VCC table\n        # user_id = checkbook authorization\n        # id = unique card identifier\n        new_vcc = {\"user_id\": f'{user_res[\"key\"]}:{user_res[\"secret\"]}', \"id\": vcc_res[\"id\"], \\\n                    \"card_number\": vcc_res[\"card_number\"], \"expiration_date\": vcc_res[\"expiration_date\"], \"cvv\": vcc_res[\"cvv\"]}\n        _ = supabase.table('VCC').insert(new_vcc).execute()\n\n        return redirect(f'/marketplace/{user_res[\"key\"]}%3A{user_res[\"secret\"]}')\n    else:\n        return \"404 Error: Page not found\"\n\n# marketplace for logged in user\n@app.route(\"/marketplace/<user>\", methods=['GET'])\ndef marketplace(user=None):\n    # get the database element for the logged in user\n    u = supabase.table('Users').select(\"*\").eq(\"id\", user).execute()\n    data = u.data[0]\n\n    # TODO: embed You.com into this \n    return render_template('marketplace.html', id=user, name=data[\"name\"], balance=data[\"balance\"])\n\n# buy a product\n@app.route(\"/buy/<user>/<product>\", methods=['PUT'])\ndef buy(user=None, product=None):\n    if not user or not product: return render_template('error.html')\n\n    # Get product information\n    buy_product = supabase.table('Products').select(\"*\").eq(\"id\", product).execute()\n    prod_info = buy_product.data[0]\n\n    # Get current user balance\n    buy_product = supabase.table('Users').select(\"*\").eq(\"id\", user).execute()\n    user_info = buy_product.data[0]\n\n    # update balance\n    if user_info[\"balance\"] >= prod_info[\"price\"]:\n        _ = supabase.table(\"Users\").update({\"balance\": int(user_info[\"balance\"]) - int(prod_info[\"price\"])}).eq(\"id\", user).execute()\n    else: \n        return render_template('marketplace.html', error=\"Insufficent Funds\")\n\n# buy a product\n# card info is for ebt\n@app.route(\"/redeem/<user>/\", methods=['GET', 'POST'])\ndef redeem(card_number, expiration_date, cvv, user=None, deposit=0):\n    if request.method == 'GET':\n        # TODO: have form where people can enter in their ebt and redeem credits\n        return \"\"\"Fuck me\"\"\"\n    elif request.method == 'POST':\n        if not user: return render_template('error.html')\n\n        # TODO: actually get the money from ebt to us\n\n        # Get current user balance\n        buy_product = supabase.table('Users').select(\"*\").eq(\"id\", user).execute()\n        assert(len(buy_product) == 1)\n        user_info = json.loads(buy_product.data[0])\n\n        # update balance\n        _ = supabase.table(\"Users\").update({\"balance\": int(user_info[\"balance\"]) + int(deposit)}).eq(\"id\", user).execute()\n    else:\n        return render_template('error.html')\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/flaskr/app.py b/flaskr/app.py
+--- a/flaskr/app.py	(revision da211ac5a67ac42528abcdd0eb6a3e831dafa5f8)
++++ b/flaskr/app.py	(date 1676763077044)
+@@ -1,4 +1,4 @@
+-from flask import Flask, request, render_template, redirect
++from flask import Flask, request, render_template
+ import requests
+ import os
+ from supabase import create_client, Client
+@@ -10,7 +10,7 @@
+ # supa_key: str = os.environ.get("SUPABASE_KEY")
+ 
+ supa_url: str = "https://jzjvqqnpxpmrsqwooipn.supabase.co"
+-supa_key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY3NjcwNTEzNSwiZXhwIjoxOTkyMjgxMTM1fQ.6lsTCYOKvVqgcqiDrH7K4PLsxU6kPxss3hPyB7JA5zM"
++supa_key: str = "teyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY3MDUxMzUsImV4cCI6MTk5MjI4MTEzNX0.I1zPmUnmOOXM2opyktaMFU3oji7cHMlEPE8rAin0gI8"
+ supabase: Client = create_client(supa_url, supa_key)
+ 
+ user_url = "https://sandbox.checkbook.io/v3/user"
+@@ -30,7 +30,7 @@
+         # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
+         return render_template('create_user.html') # UPDATE THIS TO THE CORRESPONDING HTML FILE!!!!!!!
+     elif request.method == 'POST':
+-        if not request.form["name"] or not request.form["email"]: return render_template('error.html')
++        if not request.form["name"] or not request.form["email"]: return "Go lol yourself"
+ 
+         name = request.form["name"]
+         email = request.form["email"]
+@@ -52,6 +52,7 @@
+         # res["secret"]
+         # res["user_id"]  
+         user_res = json.loads(user_response.text)
++        print(user_res)
+ 
+         # make virtual credit card (vcc)
+         # TODO: do we just want to hardcode an address in?
+@@ -79,42 +80,45 @@
+         # add vcc to user and add it to VCC table
+         # user_id = checkbook authorization
+         # id = unique card identifier
+-        new_vcc = {"user_id": f'{user_res["key"]}:{user_res["secret"]}', "id": vcc_res["id"], \
+-                    "card_number": vcc_res["card_number"], "expiration_date": vcc_res["expiration_date"], "cvv": vcc_res["cvv"]}
++        new_vcc = {"user_id": f'{user_res["key"]}:{user_res["secret"]}', "id": vcc_res["id"], "card_number": vcc_res["card_number"], "expiration_date": res["expiration_date"], "cvv": res["cvv"]}
+         _ = supabase.table('VCC').insert(new_vcc).execute()
+-
+-        return redirect(f'/marketplace/{user_res["key"]}%3A{user_res["secret"]}')
+     else:
+         return "404 Error: Page not found"
+ 
+ # marketplace for logged in user
+ @app.route("/marketplace/<user>", methods=['GET'])
+ def marketplace(user=None):
++    if not user: return "Log in bitch" #UPDATE THIS
++
+     # get the database element for the logged in user
+     u = supabase.table('Users').select("*").eq("id", user).execute()
+-    data = u.data[0]
++    assert(len(u) == 1)
++    data = json.loads(u.data[0])
+ 
+     # TODO: embed You.com into this 
+-    return render_template('marketplace.html', id=user, name=data["name"], balance=data["balance"])
++    return f"""<h1>{data["name"]} has a balance of {data["balance"]}</>"""
+ 
+ # buy a product
+-@app.route("/buy/<user>/<product>", methods=['PUT'])
++@app.route("/buy/<user>/<product>", methods=['POST'])
+ def buy(user=None, product=None):
+-    if not user or not product: return render_template('error.html')
++    if not user or not product: return "Log in and pick an item bitch"
+ 
+     # Get product information
+     buy_product = supabase.table('Products').select("*").eq("id", product).execute()
+-    prod_info = buy_product.data[0]
++    assert(len(buy_product) == 1)
++    prod_info = json.loads(buy_product.data[0])
+ 
+     # Get current user balance
+     buy_product = supabase.table('Users').select("*").eq("id", user).execute()
+-    user_info = buy_product.data[0]
++    assert(len(buy_product) == 1)
++    user_info = json.loads(buy_product.data[0])
+ 
+     # update balance
+     if user_info["balance"] >= prod_info["price"]:
+         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) - int(prod_info["price"])}).eq("id", user).execute()
+     else: 
+-        return render_template('marketplace.html', error="Insufficent Funds")
++        # TODO: also redirect to marketplace page
++        return """Insufficient funds"""
+ 
+ # buy a product
+ # card info is for ebt
+@@ -122,9 +126,10 @@
+ def redeem(card_number, expiration_date, cvv, user=None, deposit=0):
+     if request.method == 'GET':
+         # TODO: have form where people can enter in their ebt and redeem credits
++        return render_template('redeem.html')
+         return """Fuck me"""
+     elif request.method == 'POST':
+-        if not user: return render_template('error.html')
++        if not user: return """Log in bitch"""
+ 
+         # TODO: actually get the money from ebt to us
+ 
+@@ -136,4 +141,4 @@
+         # update balance
+         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) + int(deposit)}).eq("id", user).execute()
+     else:
+-        return render_template('error.html')
++        return "404: Page not found"
+\ No newline at end of file
+Index: flaskr/templates/home.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Document</title>\n</head>\n<body>\n    <h1>Locl</h1>\n    <a href=\"/\">Login</a>\n    <a href=\"/create\">Create Account</a>\n</body>\n</html>\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/flaskr/templates/home.html b/flaskr/templates/home.html
+--- a/flaskr/templates/home.html	(revision da211ac5a67ac42528abcdd0eb6a3e831dafa5f8)
++++ b/flaskr/templates/home.html	(date 1676762228358)
+@@ -7,7 +7,7 @@
+     <title>Document</title>
+ </head>
+ <body>
+-    <h1>Locl</h1>
++    <title>Locl</title>
+     <a href="/">Login</a>
+     <a href="/create">Create Account</a>
+ </body>
+Index: flaskr/templates/redeem.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/flaskr/templates/redeem.html b/flaskr/templates/redeem.html
+new file mode 100644
+--- /dev/null	(date 1676762228362)
++++ b/flaskr/templates/redeem.html	(date 1676762228362)
+@@ -0,0 +1,28 @@
++<!--  Load CSS in Flask with html-->
++<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/redeem.css') }}">
++
++<div class="payment-title">
++  <h1>Payment Information</h1>
++</div>
++<div class="form-container">
++  <div class="field-container">
++    <label for="name">Name</label>
++    <input id="name" maxlength="20" type="text">
++  </div>
++  <div class="field-container">
++    <label for="cardnumber">Card Number</label><span id="generatecard">generate random</span>
++    <input id="cardnumber" type="text" pattern="[0-9]*" inputmode="numeric">
++    <svg id="ccicon" class="ccicon" width="750" height="471" viewBox="0 0 750 471" version="1.1" xmlns="http://www.w3.org/2000/svg"
++         xmlns:xlink="http://www.w3.org/1999/xlink">
++
++    </svg>
++  </div>
++  <div class="field-container">
++    <label for="expirationdate">Expiration (mm/yy)</label>
++    <input id="expirationdate" type="text" pattern="[0-9]*" inputmode="numeric">
++  </div>
++  <div class="field-container">
++    <label for="securitycode">Security Code</label>
++    <input id="securitycode" type="text" pattern="[0-9]*" inputmode="numeric">
++  </div>
++</div>
+\ No newline at end of file
+Index: flaskr/static/styles/redeem.css
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/flaskr/static/styles/redeem.css b/flaskr/static/styles/redeem.css
+new file mode 100644
+--- /dev/null	(date 1676762228367)
++++ b/flaskr/static/styles/redeem.css	(date 1676762228367)
+@@ -0,0 +1,356 @@
++body {
++    margin: 0;
++    padding: 0;
++    background-color: #f9f9f9;
++    display: -webkit-box;
++    display: -ms-flexbox;
++    display: flex;
++    -ms-flex-line-pack: center;
++    align-content: center;
++    -webkit-box-align: center;
++    -ms-flex-align: center;
++    align-items: center;
++    -webkit-box-pack: center;
++    -ms-flex-pack: center;
++    justify-content: center;
++    min-height: 100vh;
++    -ms-flex-wrap: wrap;
++    flex-wrap: wrap;
++    font-family: 'Raleway';
++}
++
++.payment-title {
++    width: 100%;
++    text-align: center;
++}
++
++.form-container .field-container:first-of-type {
++    grid-area: name;
++}
++
++.form-container .field-container:nth-of-type(2) {
++    grid-area: number;
++}
++
++.form-container .field-container:nth-of-type(3) {
++    grid-area: expiration;
++}
++
++.form-container .field-container:nth-of-type(4) {
++    grid-area: security;
++}
++
++.field-container input {
++    -webkit-box-sizing: border-box;
++    box-sizing: border-box;
++}
++
++.field-container {
++    position: relative;
++}
++
++.form-container {
++    display: grid;
++    grid-column-gap: 10px;
++    grid-template-columns: auto auto;
++    grid-template-rows: 90px 90px 90px;
++    grid-template-areas: "name name""number number""expiration security";
++    max-width: 400px;
++    padding: 20px;
++    color: #707070;
++}
++
++label {
++    padding-bottom: 5px;
++    font-size: 13px;
++}
++
++input {
++    margin-top: 3px;
++    padding: 15px;
++    font-size: 16px;
++    width: 100%;
++    border-radius: 3px;
++    border: 1px solid #dcdcdc;
++}
++
++.ccicon {
++    height: 38px;
++    position: absolute;
++    right: 6px;
++    top: calc(50% - 17px);
++    width: 60px;
++}
++
++/* CREDIT CARD IMAGE STYLING */
++.preload * {
++    -webkit-transition: none !important;
++    -moz-transition: none !important;
++    -ms-transition: none !important;
++    -o-transition: none !important;
++}
++
++.container {
++    width: 100%;
++    max-width: 400px;
++    max-height: 251px;
++    height: 54vw;
++    padding: 20px;
++}
++
++#ccsingle {
++    position: absolute;
++    right: 15px;
++    top: 20px;
++}
++
++#ccsingle svg {
++    width: 100px;
++    max-height: 60px;
++}
++
++.creditcard svg#cardfront,
++.creditcard svg#cardback {
++    width: 100%;
++    -webkit-box-shadow: 1px 5px 6px 0px black;
++    box-shadow: 1px 5px 6px 0px black;
++    border-radius: 22px;
++}
++
++#generatecard{
++    cursor: pointer;
++    float: right;
++    font-size: 12px;
++    color: #fff;
++    padding: 2px 4px;
++    background-color: #909090;
++    border-radius: 4px;
++    cursor: pointer;
++    float:right;
++}
++
++/* CHANGEABLE CARD ELEMENTS */
++.creditcard .lightcolor,
++.creditcard .darkcolor {
++    -webkit-transition: fill .5s;
++    transition: fill .5s;
++}
++
++.creditcard .lightblue {
++    fill: #03A9F4;
++}
++
++.creditcard .lightbluedark {
++    fill: #0288D1;
++}
++
++.creditcard .red {
++    fill: #ef5350;
++}
++
++.creditcard .reddark {
++    fill: #d32f2f;
++}
++
++.creditcard .purple {
++    fill: #ab47bc;
++}
++
++.creditcard .purpledark {
++    fill: #7b1fa2;
++}
++
++.creditcard .cyan {
++    fill: #26c6da;
++}
++
++.creditcard .cyandark {
++    fill: #0097a7;
++}
++
++.creditcard .green {
++    fill: #66bb6a;
++}
++
++.creditcard .greendark {
++    fill: #388e3c;
++}
++
++.creditcard .lime {
++    fill: #d4e157;
++}
++
++.creditcard .limedark {
++    fill: #afb42b;
++}
++
++.creditcard .yellow {
++    fill: #ffeb3b;
++}
++
++.creditcard .yellowdark {
++    fill: #f9a825;
++}
++
++.creditcard .orange {
++    fill: #ff9800;
++}
++
++.creditcard .orangedark {
++    fill: #ef6c00;
++}
++
++.creditcard .grey {
++    fill: #bdbdbd;
++}
++
++.creditcard .greydark {
++    fill: #616161;
++}
++
++/* FRONT OF CARD */
++#svgname {
++    text-transform: uppercase;
++}
++
++#cardfront .st2 {
++    fill: #FFFFFF;
++}
++
++#cardfront .st3 {
++    font-family: 'Source Code Pro', monospace;
++    font-weight: 600;
++}
++
++#cardfront .st4 {
++    font-size: 54.7817px;
++}
++
++#cardfront .st5 {
++    font-family: 'Source Code Pro', monospace;
++    font-weight: 400;
++}
++
++#cardfront .st6 {
++    font-size: 33.1112px;
++}
++
++#cardfront .st7 {
++    opacity: 0.6;
++    fill: #FFFFFF;
++}
++
++#cardfront .st8 {
++    font-size: 24px;
++}
++
++#cardfront .st9 {
++    font-size: 36.5498px;
++}
++
++#cardfront .st10 {
++    font-family: 'Source Code Pro', monospace;
++    font-weight: 300;
++}
++
++#cardfront .st11 {
++    font-size: 16.1716px;
++}
++
++#cardfront .st12 {
++    fill: #4C4C4C;
++}
++
++/* BACK OF CARD */
++#cardback .st0 {
++    fill: none;
++    stroke: #0F0F0F;
++    stroke-miterlimit: 10;
++}
++
++#cardback .st2 {
++    fill: #111111;
++}
++
++#cardback .st3 {
++    fill: #F2F2F2;
++}
++
++#cardback .st4 {
++    fill: #D8D2DB;
++}
++
++#cardback .st5 {
++    fill: #C4C4C4;
++}
++
++#cardback .st6 {
++    font-family: 'Source Code Pro', monospace;
++    font-weight: 400;
++}
++
++#cardback .st7 {
++    font-size: 27px;
++}
++
++#cardback .st8 {
++    opacity: 0.6;
++}
++
++#cardback .st9 {
++    fill: #FFFFFF;
++}
++
++#cardback .st10 {
++    font-size: 24px;
++}
++
++#cardback .st11 {
++    fill: #EAEAEA;
++}
++
++#cardback .st12 {
++    font-family: 'Rock Salt', cursive;
++}
++
++#cardback .st13 {
++    font-size: 37.769px;
++}
++
++/* FLIP ANIMATION */
++.container {
++    perspective: 1000px;
++}
++
++.creditcard {
++    width: 100%;
++    max-width: 400px;
++    -webkit-transform-style: preserve-3d;
++    transform-style: preserve-3d;
++    transition: -webkit-transform 0.6s;
++    -webkit-transition: -webkit-transform 0.6s;
++    transition: transform 0.6s;
++    transition: transform 0.6s, -webkit-transform 0.6s;
++    cursor: pointer;
++}
++
++.creditcard .front,
++.creditcard .back {
++    position: absolute;
++    width: 100%;
++    max-width: 400px;
++    -webkit-backface-visibility: hidden;
++    backface-visibility: hidden;
++    -webkit-font-smoothing: antialiased;
++    color: #47525d;
++}
++
++.creditcard .back {
++    -webkit-transform: rotateY(180deg);
++    transform: rotateY(180deg);
++}
++
++.creditcard.flipped {
++    -webkit-transform: rotateY(180deg);
++    transform: rotateY(180deg);
++}
+\ No newline at end of file
