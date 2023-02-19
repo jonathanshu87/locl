@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 <body>
     <div>
@@ -16,11 +17,17 @@
     <a href="/redeem/{{ id }}">Redeem</a>
     <div>
         {% for product in products %}
-            <div>
-                <h2>{{ product.name }}</h2>
-                <p>{{ product.item }}</p>
-                <p>{{ product.price }}</p>
-                <a href="/buy/{{ id }}/{{ product.id }}">Buy</a>
+            <div class="card-area">
+                <div class="card-el-content">
+                    <div class="card-heading">
+                        <span class="heading-text plt-09">{{ product.name }}</span>
+                    </div>
+                    <div class="pl-09 main-text"><i class="fa fa-location-arrow"></i>{{ product.item }}</div>
+                    <a href="/buy/{{ id }}/{{ product.id }}">Buy</a>
+                </div>
+            </div>
+            <div class="card-el-footer">
+                {{ product.price }}
             </div>
         {% endfor %}
     </div>
