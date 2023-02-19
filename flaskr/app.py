@@ -19,15 +19,12 @@ vcc_url = "https://sandbox.checkbook.io/v3/account/vcc"
 
 @app.route("/")
 def hello():
-    # TODO: add a create user button that redirects to /create & a sign in button which doesn't do anything
     return render_template('home.html')
 
 # create a user
 @app.route("/create", methods=['GET', 'POST'])
 def create_user():
     if request.method == 'GET': 
-        # TODO: make a form asking for name and ebt and email
-        # TODO: might be easier not to include ebt in this step and have them fill it in on their own in /redeem
         return render_template('create_user.html') 
     elif request.method == 'POST':
         if not request.form["name"] or not request.form["email"]: return render_template('error.html')
@@ -129,25 +126,9 @@ def buy(user=None, product=None):
     # update balance
     if user_info["balance"] >= prod_info["price"]:
 
-        key = user_info["id"]
-        amount = prod_info["price"]
-        description = prod_info["name"]
-
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-            "Authorization": key
-        }
-        payload = {
-            "recipient": "owner@owner.com",
-            "name": "owner",
-            "amount": amount,
-            "description": description
-        }
-
-        response = requests.post(user_url, json=payload, headers=headers)
-
         _ = supabase.table("Users").update({"balance": int(user_info["balance"]) - int(prod_info["price"])}).eq("id", user).execute()
+
+        return redirect(f'/marketplace/{user}')
     else: 
         return render_template('marketplace.html', error="Insufficent Funds")
 
@@ -156,7 +137,6 @@ def buy(user=None, product=None):
 @app.route("/redeem/<user>", methods=['GET', 'POST'])
 def redeem(user=None):
     if request.method == 'GET':
-        # TODO: have form where people can enter in their ebt and redeem credits
         return render_template("redeem.html")
     elif request.method == 'POST':
         if not request.form["card_number"] or not request.form["expiration_date"] or not request.form["cvv"] or \
@@ -169,6 +149,38 @@ def redeem(user=None):
         deposit = request.form["deposit"]
 
         # TODO: actually get the money from ebt to us
+        url = "https://sandbox.checkbook.io/v3/check/digital"
+        users = supabase.table('Users').select("*").eq("id", user).execute()
+        vccs = supabase.table('VCC').select("*").eq("user_id", user).execute()
+        user_info = users.data[0]
+
+        payload = {
+            "recipient": user_info["email"],
+            "name": user_info["name"],
+            "amount": deposit,
+            "description": "redeem EBT"
+        }
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "Authorization": "86a538fb6584799a755f1a2ab03f6d4b:ce2b54a8e93802433632c4c2ac7f4c54"
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+
+        res = json.loads(response.text)
+        check_id = res["check"]
+
+        url = "https://sandbox.checkbook.io/v3/check/deposit/" + check_id
+
+        payload = {"account": vccs["id"]}
+        headers = {
+            "content-type": "application/json",
+            "Authorization": "d6aa2703655f4ba2af2a56202961ca86:dXbCgzYBMibj8ZwuQMd2NXr6rtvjZ8"
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+
 
         # Get current user balance
         buy_product = supabase.table('Users').select("*").eq("id", user).execute()
