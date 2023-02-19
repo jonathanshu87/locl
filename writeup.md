@@ -42,4 +42,12 @@ We use Supabase and PostgreSQL to store our product, store, virtual credit card,
 We use Checkbook.io's Payfac API to create transactions between shoppers and vendors. First, shoppers deposit credits into their Locl account from the EBT card. The EBT funds are later redeemed with the state government by Locl. Next, each time a shopper decides to purchase a good, our ```owner``` user will transfer funds to the desired vendor's virtual credit card. From there, vendors can spend their funds as if it were a pre-paid debit card.
 
 # Challenges we encountered
+
+Because we were all new to using these APIs, we were initially unclear about what actions they could suppport. For example, we wanted to use You.com API to build our marketplace. However, it soon became apparent that we couldn't embed their API into our static HTML page as we'd assume. Thus, we had to pivot to creating our own cards with Jinja.
+
 # Looking forward
+
+Of course, there are still a few features we'd like to include in a longer timeframe.
+- a search and filtering system to show shoppers their preferred goods.
+- an automated redemption system with the state government for EBT.
+- improved security and encryption for all API calls and database queries.
