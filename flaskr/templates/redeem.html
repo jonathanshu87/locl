@@ -35,7 +35,17 @@
       <label for="securitycode">Security Code</label>
       <input id="securitycode" type="text" pattern="[0-9]*" inputmode="numeric">
     </div>
+    <div class="field-container">
+    <label for="deposit">Deposit Amount</label>
+    <input id="deposit" type="text" pattern="[0-9]*" inputmode="numeric">
   </div>
+  <div class="clearfix">
+    <form method="POST" style="border:1px solid #ccc">
+      <button type="submit" a href="{{ '/marketplace/%s'%user }}">Submit</button>
+    </form>
+  </div>
+</div>
+
 </body>
 
 </html>
