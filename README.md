@@ -1,7 +1,7 @@
 # locl
 
-## Start venv
-```virtualenv .env && source .env/bin/activate && pip install -r requirements.txt```
+## Activate venv
+```source .env/bin/activate```
 (tbh idk if this works)
 
 ## Supabase password
