@@ -162,11 +162,11 @@ def redeem(user=None):
         if not request.form["card_number"] or not request.form["expiration_date"] or not request.form["cvv"] or \
             not request.form["deposit"] or not user: 
             return render_template("error.html")
-
-        card_number = request.form["card_number"]
-        expiration_date = request.form["expiration_date"]
-        cvv = request.form["cvv"]
-        deposit = request.form["deposit"]
+        return render_template("redeem.html", card_number = data["cardnumber"], expiration_date = data["expirationdate"], cvv = data["securitycode"], deposit = data["deposit"])
+        #card_number = request.form["card_number"]
+        #expiration_date = request.form["expiration_date"]
+        #cvv = request.form["cvv"]
+        #deposit = request.form["deposit"]
 
         # TODO: actually get the money from ebt to us
 
