@@ -1,15 +1,20 @@
 # locl
 
-## Start venv
-```virtualenv .env && source .env/bin/activate && pip install -r requirements.txt```
-(tbh idk if this works)
+## Start
 
-## Supabase password
-loclisreallycool
+First activate virtual python environment
 
-## environment vars
-https://supabase.com/blog/loading-data-supabase-python
+```cd locl && virtualenv .env && source .env/bin/activate && pip3 install supabase && pip3 install flask```
 
-export SUPABASE_URL=<<https://jzjvqqnpxpmrsqwooipn.supabase.co> URL>>
-export SUPABASE_KEY=<<teyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY3MDUxMzUsImV4cCI6MTk5MjI4MTEzNX0.I1zPmUnmOOXM2opyktaMFU3oji7cHMlEPE8rAin0gI8> anon public>> 
-export SUPABASE_SECRET_KEY=<<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6anZxcW5weHBtcnNxd29vaXBuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY3NjcwNTEzNSwiZXhwIjoxOTkyMjgxMTM1fQ.6lsTCYOKvVqgcqiDrH7K4PLsxU6kPxss3hPyB7JA5zM> service_role secret>>
+Next, start Flask server
+
+```cd flaskr && flask run```
+
+Open server on localhost 127.0.0.1
+
+## Usage
+
+From here, you can create an account and access the marketplace. Click redeem to transfer funds from EBT to Locl. Browse the product selection on marketplace and buy what you're interested in with just a click.
+
+# Environment Variables
+Supabase password: loclisreallycool

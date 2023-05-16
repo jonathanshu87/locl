@@ -14,38 +14,31 @@
   <div class="payment-title">
     <h1>Payment Information</h1>
   </div>
-  <div class="form-container">
-    <div class="field-container">
-      <label for="name">Name</label>
-      <input id="name" maxlength="20" type="text">
-    </div>
-    <div class="field-container">
+  <form action="/redeem/{{ user }}" method="POST" style="border:1px solid #ccc">
+    <div class="container">
+      <h1>Welcome to Locl.</h1>
+      <p>Please fill in this form to create an account. Now.</p>
+      <hr>
+
       <label for="cardnumber">Card Number</label>
-      <input id="cardnumber" type="text" pattern="[0-9]*" inputmode="numeric">
+      <input id="cardnumber" name="card_number" type="text" pattern="[0-9]*" inputmode="numeric">
       <svg id="ccicon" class="ccicon" width="750" height="471" viewBox="0 0 750 471" version="1.1"
         xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-
       </svg>
-    </div>
-    <div class="field-container">
-      <label for="expirationdate">Expiration (mm/yy)</label>
-      <input id="expirationdate" type="text" pattern="[0-9]*" inputmode="numeric">
-    </div>
-    <div class="field-container">
-      <label for="securitycode">Security Code</label>
-      <input id="securitycode" type="text" pattern="[0-9]*" inputmode="numeric">
-    </div>
-    <div class="field-container">
-    <label for="deposit">Deposit Amount</label>
-    <input id="deposit" type="text" pattern="[0-9]*" inputmode="numeric">
-  </div>
-  <div class="clearfix">
-    <form method="POST" style="border:1px solid #ccc">
-      <button type="submit" a href="{{ '/marketplace/%s'%user }}">Submit</button>
-    </form>
-  </div>
-</div>
 
+      <label for="expirationdate">Expiration (mm/yy)</label>
+      <input id="expirationdate" name="expiration_date" type="text">
+
+      <label for="securitycode">Security Code</label>
+      <input id="securitycode" name="cvv" type="text" pattern="[0-9]*" inputmode="numeric">
+
+      <label for="deposit">Deposit Amount</label>
+      <input id="deposit" name="deposit" type="text">
+
+      <div class="clearfix">
+        <button type="submit" class="signupbtn">Redeem</button>
+      </div>
+  </form>
 </body>
 
 </html>

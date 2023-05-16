@@ -1,3 +1,6 @@
+@import url('https://fonts.cdnfonts.com/css/google-sans');
+
+
 * {box-sizing: border-box}
 
 /* Full-width input fields */
@@ -36,6 +39,17 @@ button:hover {
   opacity:1;
 }
 
+input[type=submit]{
+  background-color: #04AA6D;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  opacity: 0.9;
+}
+
 /* Extra styles for the cancel button */
 .cancelbtn {
   padding: 14px 20px;
@@ -65,4 +79,188 @@ button:hover {
   .cancelbtn, .signupbtn {
     width: 100%;
   }
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Product Sans', sans-serif;
+}
+#banner{
+    background-color: #0d6a1b; 
+    padding-top: 150px;
+    padding-bottom: 150px;
+}
+#banner h1{
+    color: #fff;
+    text-align: center;
+}
+#banner span{
+    color: orange;
+}
+#banner p{
+    color: #fff;
+    text-align: center;
+}
+#banner .form{
+    margin-top: 50px;
+}
+#banner input{
+    width: 400px;
+    border: none;
+    border-radius: 40px 0px 0px 40px;
+    padding: 15px;
+}
+#banner button{
+    width: 100px;
+    border: none;
+    border-radius: 0px 40px 40px 0px;
+    padding: 15px;
+    background-color: orange;
+}
+#about {
+    margin-top: 80px;
+    margin-bottom: 80px;
+}
+#about span{
+    color: #fff;
+    font-size: 30px;
+    margin-bottom: 10px;
+    background-color: #0d6a1b;
+    padding: 13px;
+}
+#about .box{
+    padding: 20px;
+    box-shadow: 3px 3px 31px -9px rgba(0,0,0,0.08);
+}
+#pricing h2{
+    color:#fff;
+}
+#pricing{
+    margin-top: 80px;
+    background-color: #0d6a1b;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+#pricing button{
+    border: none;
+    padding: 15px;
+    color: #000;
+    background-color: orange;
+}
+#pricing .card-header{
+    background-color: #fff;
+}
+@media only screen and (max-width: 600px) {
+    #banner input{
+        width: 100%;
+        border-radius: 40px;
+    }
+    #banner button{
+        width: 50%;
+        border-radius: 40px;
+        margin-top: 30px;
+    }
+  }
+
+
+
+
+
+
+  /*  Helper Styles */
+  .p-1r {
+    padding: 1rem;
+}
+
+.plr-02 {
+    padding: 0 2rem;
+}
+
+.plt-09 {
+    padding: 0.9rem 0 0 0.9rem;
+}
+
+.pl-09 {
+    padding-left: .9rem;
+}
+
+.br-t4 {
+    border-radius: 4px 0 0;
+}
+
+.br-tr4 {
+    border-radius: 0 4px 0 0;
+}
+
+.br-8 {
+    border-radius: 8px;
+}
+
+
+/* Card Styles */
+.card-el {
+    background: #fff;
+    color: #34495e;
+    margin: .5rem;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.card-area {
+    display: flex;
+}
+
+.card-image {
+    max-height: 150px;
+    width: 50%;
+}
+
+.card-image img {
+    max-height: 100%;
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.card-el-content {
+    width: 100%;
+}
+
+.card-heading {
+    display: flex;
+    justify-content: space-between;
+}
+
+.heading-text {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.main-text {
+    padding-top: .4rem;
+    padding-bottom: .4rem;
+    font-size: 12px;
+}
+
+.card-rating {
+    box-sizing: content-box;
+    background: #95a5a6;
+    padding: .2rem;
+    color: #333;
+    font-size: 12px;
+    max-height: 16px;
+    width: 80px;
+}
+
+.card-el-footer {
+    padding: .5rem .4rem;
+    font-size: 12px;
+    background: #6c757d;
+    color: #fff;
+    border-radius: 0 0 5px 5px;
 }
